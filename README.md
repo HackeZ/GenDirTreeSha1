@@ -16,3 +16,7 @@
 $ go build -o genDirTreeSha1 main.go
 $ ./genDirTreeSha1 -r "xxx dir root" -d ".git,vie?s,*s" -f "*.go,*.t?t,*.*"
 ```
+
+### Dev-Log
+
+基本功能已经实现，剩余测试代码为完成。
