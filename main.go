@@ -8,8 +8,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
-	"GenDirTreeHash/glob"
+	"GenDirTreeSha1/glob"
 )
 
 var igFile *string = flag.String("f", "", "-f used to set ignore file list.")
@@ -19,8 +21,11 @@ var dirRoot *string = flag.String("r", "", "-r used to set dir root.")
 var ignoreFileList []string
 var ignoreDirList []string
 
+var writeFileChan chan map[string]*os.FileInfo
+var wg sync.WaitGroup
+
 // GetDirTree return dir tree.
-func GetDirTree(dirRoot string, file *os.File) {
+func GetDirTree(dirRoot string, resultFile *os.File) {
 	err := filepath.Walk(dirRoot, func(path string, f os.FileInfo, err error) error {
 		if f == nil {
 			return err
@@ -42,25 +47,36 @@ func GetDirTree(dirRoot string, file *os.File) {
 				return nil
 			}
 		}
-		sha, buf := sha1.New(), make([]byte, 1024*1024*16*16)
-		thisF, _ := os.Open(path)
-		defer thisF.Close()
-		for {
-			n, err := thisF.Read(buf)
-			sha.Write(buf[:n])
-			if err == io.EOF {
-				break
-			}
-		}
-		_, err = file.WriteString(fmt.Sprintf("%s, %x, %d Byte\n", f.Name(), sha.Sum(nil), f.Size()))
-		if err != nil {
-			panic(err)
-		}
+		go Sha1Sum(path, f)
+
 		return nil
 	})
 	if err != nil {
 		fmt.Printf("filepath.Walk() returned %v\n", err)
 	}
+	// When Walk Done, Close Chan to Exit Main Process.
+	wg.Wait()
+	close(writeFileChan)
+}
+
+func Sha1Sum(path string, file os.FileInfo) {
+	wg.Add(1)
+	sha, buf := sha1.New(), make([]byte, 1024*1024*16*16)
+	thisF, _ := os.Open(path)
+	defer thisF.Close()
+	for {
+		n, err := thisF.Read(buf)
+		sha.Write(buf[:n])
+		if err == io.EOF {
+			break
+		}
+	}
+	fileSha1 := sha.Sum(nil)
+	fileString := fmt.Sprintf("%x", fileSha1)
+	sendFileInfo := make(map[string]*os.FileInfo)
+	sendFileInfo[fileString] = &file
+	writeFileChan <- sendFileInfo
+	wg.Done()
 }
 
 func init() {
@@ -95,5 +111,32 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	writeFileChan = make(chan map[string]*os.FileInfo, 100)
+	writeMap := make(map[string]*os.FileInfo)
 	GetDirTree(*dirRoot, file)
+
+	time.Sleep(10 * time.Millisecond)
+
+	for {
+		result, isClose := <-writeFileChan
+		if !isClose {
+			break
+		}
+		for sha1, f := range result {
+			fmt.Println(result)
+			writeMap[sha1] = f
+		}
+	}
+
+	fmt.Println(writeMap)
+
+	// Write Result into File.
+	for sha1, f := range writeMap {
+		file1 := *f
+		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
+		if err != nil {
+			panic(err)
+		}
+	}
 }

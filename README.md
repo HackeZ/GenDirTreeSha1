@@ -20,3 +20,5 @@ $ ./genDirTreeSha1 -r "xxx dir root" -d ".git,vie?s,*s" -f "*.go,*.t?t,*.*"
 ### Dev-Log
 
 基本功能已经实现，剩余测试代码为完成。
+
+这是一个真正完全并发同步的版本，计算每一个文件的 SHA1 值都是一个单独的 Groutine，再也不用怕大文件啦！
