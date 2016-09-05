@@ -65,6 +65,7 @@ func GetDirTree(dirRoot string, file *os.File) {
 	}
 }
 
+// init Get and Init
 func init() {
 	flag.Parse()
 
@@ -86,16 +87,23 @@ func init() {
 
 }
 
-func main() {
+// GenDirTreeSHA1
+func GenDirTreeSHA1() {
 	if len(*dirRoot) == 0 {
 		fmt.Println("Please Set Up Dir Root.")
 		os.Exit(0)
 	}
 	file, err := os.OpenFile("./result.txt", os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	// Clear Up result.txt
 	file.Truncate(0)
 	defer file.Close()
 	if err != nil {
 		panic(err)
 	}
+	// gen
 	GetDirTree(*dirRoot, file)
+}
+
+func main() {
+	GenDirTreeSHA1()
 }

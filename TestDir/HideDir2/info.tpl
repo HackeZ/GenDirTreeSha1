@@ -7,6 +7,8 @@
     </head>
     <body>
     <h2>{{ .Info }}</h2>
+    <h3>{{ .Info }}</h3>
+    <h4>{{ .Info }}</h4>
     </body>
 
     <script type="text/javascript">
