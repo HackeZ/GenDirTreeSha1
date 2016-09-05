@@ -9,8 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"GenDirTreeHash/glob"
+	"GenDirTreeSha1/glob"
 )
+
+// 单线程版本
 
 var igFile *string = flag.String("f", "", "-f used to set ignore file list.")
 var igDir *string = flag.String("d", "", "-d used to set ignore dir list.")

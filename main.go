@@ -124,12 +124,9 @@ func main() {
 			break
 		}
 		for sha1, f := range result {
-			fmt.Println(result)
 			writeMap[sha1] = f
 		}
 	}
-
-	fmt.Println(writeMap)
 
 	// Write Result into File.
 	for sha1, f := range writeMap {
@@ -139,4 +136,6 @@ func main() {
 			panic(err)
 		}
 	}
+
+	fmt.Println("Generate Dir tree SHA1 Done, Check your result.txt!")
 }
