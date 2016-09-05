@@ -14,13 +14,11 @@
 
 ```go
 $ go build -o genDirTreeSha1 main.go
-$ ./genDirTreeSha1 -r "xxx dir root" -d ".git,vie?s,*s" -f "*.go,*.t?t"
+$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t"
 ```
 
 ### Dev-Log
 
-基本功能已经实现，剩余测试代码未完成。
-
-这是一个真正完全并发同步的版本，计算每一个文件的 SHA1 值都是一个单独的 Groutine，再也不用怕大文件啦！
+基本功能已经实现，这是一个真正完全并发同步的版本，计算每一个文件的 SHA1 值都是一个单独的 Groutine，再也不用怕大文件啦！
 
 异步并发版本最大的问题是每次输出结果的顺序都是不一样的..
