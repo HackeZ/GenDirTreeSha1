@@ -46,7 +46,26 @@ func main() {
 		os.Exit(0)
 	}
 
-	FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList)
+	// Open result.txt
+	file, err := os.OpenFile("./result.txt", os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	// Clear Up result.txt
+	file.Truncate(0)
+	defer file.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	// Get Result and Save it to writeMap.
+	writeMap := FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList)
+
+	// Write Result into File.
+	for sha1, f := range writeMap {
+		file1 := *f
+		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	// Done.
 	fmt.Println("Generate Dir tree SHA1 Done, Check your result.txt!")

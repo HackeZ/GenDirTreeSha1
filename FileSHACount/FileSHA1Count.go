@@ -19,23 +19,15 @@ var writeFileChan chan map[string]*os.FileInfo
 var wg sync.WaitGroup
 
 // GenDirTreeSHA1
-func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) {
+func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) map[string]*os.FileInfo {
 	ignoreDirList, ignoreFileList = ignoreDir, ignoreFile
-	// Open result.txt
-	file, err := os.OpenFile("./result.txt", os.O_WRONLY|os.O_CREATE, os.ModePerm)
-	// Clear Up result.txt
-	file.Truncate(0)
-	defer file.Close()
-	if err != nil {
-		panic(err)
-	}
 
 	// Send Count File SHA1 between gorotinue.
 	writeFileChan = make(chan map[string]*os.FileInfo, 100)
 	// writeMap Save Result from writeFileChan
 	writeMap := make(map[string]*os.FileInfo)
 	// Get Dir Tree Start.
-	getDirTree(path, file)
+	getDirTree(path)
 
 	// Main Process Sleep a little, make writeFileChan not empty.
 	time.Sleep(10 * time.Millisecond)
@@ -51,18 +43,11 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) {
 		}
 	}
 
-	// Write Result into File.
-	for sha1, f := range writeMap {
-		file1 := *f
-		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
-		if err != nil {
-			panic(err)
-		}
-	}
+	return writeMap
 }
 
 // getDirTree return dir tree.
-func getDirTree(dirRoot string, resultFile *os.File) {
+func getDirTree(dirRoot string) {
 	err := filepath.Walk(dirRoot, func(path string, f os.FileInfo, err error) error {
 		if f == nil {
 			return err
