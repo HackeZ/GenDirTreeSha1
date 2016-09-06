@@ -15,6 +15,9 @@ import (
 var ignoreFileList []string
 var ignoreDirList []string
 
+// Set Max of Gorotine Number.
+var maxGoroutineNum int64
+
 var writeFileChan chan map[string]*os.FileInfo
 var wg sync.WaitGroup
 

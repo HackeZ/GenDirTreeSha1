@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"GenDirTreeSha1/FileSHACount"
@@ -12,12 +13,17 @@ import (
 var igFile = flag.String("f", "", "-f used to set ignore file list.")
 var igDir = flag.String("d", "", "-d used to set ignore dir list.")
 var dirRoot = flag.String("r", "", "-r used to set dir root.")
+var maxGoroutineNum = flag.Int64("g", 256, "-g used to set max of running goroutine number.")
 
 var ignoreFileList []string
 var ignoreDirList []string
 
 // init get -r -f -d Params.
 func init() {
+
+	// 添加多核支持，适合当前 CPU 计算密集的场景。
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	flag.Parse()
 
 	// init ignore dir and file list.
