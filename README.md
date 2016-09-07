@@ -14,7 +14,7 @@
 
 ```go
 $ go build -o genDirTreeSha1 main.go
-$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t"
+$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 1024
 ```
 
 ### Dev-Log
