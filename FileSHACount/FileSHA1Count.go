@@ -2,6 +2,7 @@ package FileSHACount
 
 import (
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,13 +17,23 @@ var ignoreFileList []string
 var ignoreDirList []string
 
 // Set Max of Gorotine Number.
-var maxGoroutineNum int64
+var maxGoroutineChan chan int
 
 var writeFileChan chan map[string]*os.FileInfo
 var wg sync.WaitGroup
 
-// GenDirTreeSHA1
-func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) map[string]*os.FileInfo {
+// GenDirTreeSHA1 ...
+// @param path, ignoreDir, ignoreFile, maxGoroutineNum
+// @return resultMap, error
+func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) (map[string]*os.FileInfo, error) {
+
+	// set of Max Gorotine Number.
+	if maxGNum <= 0 {
+		return nil, errors.New("Max Gorotine Number must greater than 0")
+	}
+	maxGoroutineChan = make(chan int, maxGNum)
+
+	// set of ignoreDirList and ignoreFileList.
 	ignoreDirList, ignoreFileList = ignoreDir, ignoreFile
 
 	// Send Count File SHA1 between gorotinue.
@@ -30,7 +41,7 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) map[string]*os.
 	// writeMap Save Result from writeFileChan
 	writeMap := make(map[string]*os.FileInfo)
 	// Get Dir Tree Start.
-	getDirTree(path)
+	go getDirTree(path)
 
 	// Main Process Sleep a little, make writeFileChan not empty.
 	time.Sleep(10 * time.Millisecond)
@@ -46,7 +57,7 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string) map[string]*os.
 		}
 	}
 
-	return writeMap
+	return writeMap, nil
 }
 
 // getDirTree return dir tree.
@@ -73,6 +84,8 @@ func getDirTree(dirRoot string) {
 			}
 		}
 
+		// check G chan full or not.
+		maxGoroutineChan <- 1
 		// Get a legal File to Count SHA1.
 		go sHA1Sum(path, f)
 		return nil
@@ -84,6 +97,7 @@ func getDirTree(dirRoot string) {
 	// When Walk Done, Close Chan to Exit Main Process After Count SHA1 gorotinue Done.
 	wg.Wait()
 	close(writeFileChan)
+	close(maxGoroutineChan)
 }
 
 // sHA1Sum Get File info and Count SHA1.
@@ -116,5 +130,6 @@ func sHA1Sum(path string, file os.FileInfo) {
 	sendFileInfo = nil
 
 	// This gorotinue Done.
+	<-maxGoroutineChan
 	wg.Done()
 }

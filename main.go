@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"GenDirTreeSha1/FileSHACount"
 )
@@ -13,7 +14,7 @@ import (
 var igFile = flag.String("f", "", "-f used to set ignore file list.")
 var igDir = flag.String("d", "", "-d used to set ignore dir list.")
 var dirRoot = flag.String("r", "", "-r used to set dir root.")
-var maxGoroutineNum = flag.Int64("g", 256, "-g used to set max of running goroutine number.")
+var maxGoroutineNum = flag.Int64("g", 1024, "-g used to set max of running goroutine number.")
 
 var ignoreFileList []string
 var ignoreDirList []string
@@ -61,8 +62,15 @@ func main() {
 		panic(err)
 	}
 
+	t1 := time.Now()
 	// Get Result and Save it to writeMap.
-	writeMap := FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList)
+	writeMap, err := FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList, *maxGoroutineNum)
+	// Handle GenDirTreeSHA1 Error.
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	t2 := time.Now()
 
 	// Write Result into File.
 	for sha1, f := range writeMap {
@@ -75,4 +83,5 @@ func main() {
 
 	// Done.
 	fmt.Println("Generate Dir tree SHA1 Done, Check your result.txt!")
+	fmt.Println("Used Time: ", t2.Sub(t1))
 }

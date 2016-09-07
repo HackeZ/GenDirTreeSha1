@@ -23,7 +23,18 @@ $ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t"
 
 异步并发版本最大的问题是每次输出结果的顺序都是不一样的..
 
+-------
+
 目前有一个很大的问题就是没有限制 Goroutine 的上限，如果同时处理大量容量很大的文件，栈中的空间很容易就将内存塞满。
 处理这种情况有两种办法：
     - 添加多核支持，使密集的 SHA1 值计算加快，减少阻塞的 Goroutine
     - 可以设置默认的 Goroutine 上限，另外用一个 Channel 进行同步，不让内存中存在无上限个 G。
+
+结果：
+
+![MultiCPU vs SingleCPU](http://7xsxev.com1.z0.glb.clouddn.com/GenDirTreeSHA1%20MultiCPU%20vs%20SingleCPU.png)
+
+跑出 `21s` 是上限设置为 `25600` 个 Goroutine 并且没有开启多核支持的结果。
+而 开启了多核支持，而且 Goroutine 上限是默认的 `1024` 个，却能跑出 14s 的成绩，同时也大幅度减少了栈空间所占内存。
+
+由此可见，优化之后带来的结果是可喜的。

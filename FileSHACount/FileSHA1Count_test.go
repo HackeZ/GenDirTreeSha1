@@ -10,7 +10,11 @@ func TestFileSHA1Count(t *testing.T) {
 	ignoreDir := []string{"HideDir*"}
 	ignoreFile := []string{"*.js", "*.t?t"}
 	// GenDirTreeSHA1
-	resultMap := GenDirTreeSHA1("../TestDir", ignoreDir, ignoreFile)
+	resultMap, err := GenDirTreeSHA1("../TestDir", ignoreDir, ignoreFile, int64(1024))
+
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if len(resultMap) != 7 {
 		t.Fatal("Result Length not Corrent!")
