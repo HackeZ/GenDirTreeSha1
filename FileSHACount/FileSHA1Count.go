@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"GenDirTreeSha1/glob"
+	"github.com/hackez/GenDirTreeSha1/glob"
 )
 
 var ignoreFileList []string
