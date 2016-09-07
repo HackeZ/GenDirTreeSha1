@@ -14,7 +14,7 @@
 
 ```go
 $ go get -u github.com/hackez/gendirtreesha1
-$ go build -o genDirTreeSha1 main.go
+$ cd $GOPATH/bin
 $ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 10
 ```
 
