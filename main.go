@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"GenDirTreeSha1/FileSHACount"
+	"github.com/hackez/GenDirTreeSha1/FileSHACount"
 )
 
 var igFile = flag.String("f", "", "-f used to set ignore file list.")
