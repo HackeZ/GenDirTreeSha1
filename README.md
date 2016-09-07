@@ -13,8 +13,9 @@
 ### Usage 
 
 ```go
+$ go get -u github.com/hackez/gendirtreesha1
 $ go build -o genDirTreeSha1 main.go
-$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 1024
+$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 10
 ```
 
 ### Dev-Log
