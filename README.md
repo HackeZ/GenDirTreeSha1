@@ -44,15 +44,17 @@ $ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 10
 
 ## Benchmark
 
-#### Mac 13.3 Pro
+#### Mac 13.3 Pro Retina, Late 2015
 ```
-    - CPU: i5 2.7GHz
+    - CPU: Inter i5 2.7GHz
     - Memory: 8GB DDR3
+    - Go: 1.7
 ```
 
 #### Test dir
 ```
-    - [Personal-Dictionary](https://www.github.com/hackez/Personal-Dictionary)
+    - Personal-Dictionary: https://www.github.com/hackez/Personal-Dictionary
+    - Size: 14,138,016 Bytes（15.5 MB），400+ Items
 ```
 
 #### Result
