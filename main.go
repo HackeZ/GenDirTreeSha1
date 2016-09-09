@@ -14,7 +14,7 @@ import (
 var igFile = flag.String("f", "", "-f used to set ignore file list.")
 var igDir = flag.String("d", "", "-d used to set ignore dir list.")
 var dirRoot = flag.String("r", "", "-r used to set dir root.")
-var maxGoroutineNum = flag.Int64("g", 10, "-g used to set max of running goroutine number.")
+var maxGoroutineNum = flag.Int64("g", 2048, "-g used to set max of running goroutine number.")
 
 var ignoreFileList []string
 var ignoreDirList []string
