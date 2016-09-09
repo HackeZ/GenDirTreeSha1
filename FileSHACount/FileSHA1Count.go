@@ -31,9 +31,6 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) 
 	if maxGNum <= 0 {
 		return nil, errors.New("Max Gorotine Number must greater than 0")
 	}
-	if maxGNum >= 100 {
-		return nil, errors.New("Max Gorotine Number must less than 100")
-	}
 	maxGoroutineChan = make(chan int, maxGNum)
 
 	// set of ignoreDirList and ignoreFileList.
