@@ -31,6 +31,9 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) 
 	if maxGNum <= 0 {
 		return nil, errors.New("Max Gorotine Number must greater than 0")
 	}
+	if maxGNum >= 100 {
+		return nil, errors.New("Max Gorotine Number must less than 100")
+	}
 	maxGoroutineChan = make(chan int, maxGNum)
 
 	// set of ignoreDirList and ignoreFileList.
@@ -106,7 +109,7 @@ func sHA1Sum(path string, file os.FileInfo) {
 	wg.Add(1)
 
 	// Read File Content.
-	sha, buf := sha1.New(), make([]byte, 1024*1024*16*16)
+	sha, buf := sha1.New(), make([]byte, 1024*16)
 	thisF, _ := os.Open(path)
 	defer thisF.Close()
 	for {
@@ -118,8 +121,7 @@ func sHA1Sum(path string, file os.FileInfo) {
 	}
 
 	// Use sha Count File SHA1.
-	fileSha1 := sha.Sum(nil)
-	fileString := fmt.Sprintf("%x", fileSha1)
+	fileString := fmt.Sprintf("%x", sha.Sum(nil))
 
 	// init a sendFileInfo to Send writeFileChan.
 	sendFileInfo := make(map[string]*os.FileInfo)

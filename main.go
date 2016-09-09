@@ -52,6 +52,7 @@ func main() {
 		fmt.Println("Please Set Up Dir Root.")
 		os.Exit(0)
 	}
+	fmt.Println("Max Goroutine:", maxGoroutineNum)
 
 	// Open result.txt
 	file, err := os.OpenFile("./result.txt", os.O_WRONLY|os.O_CREATE, os.ModePerm)
