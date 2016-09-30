@@ -13,10 +13,14 @@
 ### Usage 
 
 ```go
-$ go get -u github.com/hackez/gendirtreesha1
+$ go get -u github.com/HackeZ/GenDirTreeSha1
 $ cd $GOPATH/bin
-$ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 2048
+$ ./GenDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 2048
 ```
+
+### Dependce
+
+- [alecthomas/kingpin](https://github.com/alecthomas/kingpin)
 
 ### Dev-Log
 
@@ -31,3 +35,12 @@ $ ./genDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 2048
 处理这种情况有两种办法：
     - 添加多核支持，使密集的 SHA1 值计算加快，减少阻塞的 Goroutine
     - 可以设置默认的 Goroutine 上限，另外用一个 Channel 进行同步，不让内存中存在无上限个 G。
+
+--------
+
+当前最新的版本将写入文件这个步骤都已经是并发，当计算出一个结果之后马上就会将其写入文件中，而不是像之前的将所有结果读取到一个变量之后再统一写入文件。
+
+### Benchmark
+
+400 Files => Used Times : 119ms
+10286 Files => Used Times : 1.57s

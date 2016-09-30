@@ -1,20 +1,27 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
 	"time"
 
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
+
 	"github.com/hackez/gendirtreesha1/FileSHACount"
 )
 
-var igFile = flag.String("f", "", "-f used to set ignore file list.")
-var igDir = flag.String("d", "", "-d used to set ignore dir list.")
-var dirRoot = flag.String("r", "", "-r used to set dir root.")
-var maxGoroutineNum = flag.Int64("g", 2048, "-g used to set max of running goroutine number.")
+const (
+	version = "1.3.1"
+)
+
+var (
+	igFile          = kingpin.Flag("ignoreFile", "set up ignore file list. split by ',' and support wildcards.").Short('f').Default("").String()
+	igDir           = kingpin.Flag("ignoreDir", "set up ignore directory list. split by ',' and support wildcards.").Short('d').Default("").String()
+	dirRoot         = kingpin.Flag("root", "set up directory root.").Short('r').Required().String()
+	maxGoroutineNum = kingpin.Flag("maxG", "set up max of running goroutine number.").Short('g').Default("2048").Int64()
+)
 
 var ignoreFileList []string
 var ignoreDirList []string
@@ -25,7 +32,8 @@ func init() {
 	// 添加多核支持，适合当前 CPU 计算密集的场景。
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	flag.Parse()
+	kingpin.Version(version)
+	kingpin.Parse()
 
 	// init ignore dir and file list.
 	ignoreFileList = make([]string, 0)
@@ -35,13 +43,13 @@ func init() {
 		for _, v := range strings.Split(*igFile, ",") {
 			ignoreFileList = append(ignoreFileList, v)
 		}
-		fmt.Println("ignoreFileList -->", ignoreFileList)
+		fmt.Println("ignoreFileList =>", ignoreFileList)
 	}
 	if len(*igDir) != 0 {
 		for _, v := range strings.Split(*igDir, ",") {
 			ignoreDirList = append(ignoreDirList, v)
 		}
-		fmt.Println("ignoreDirList -->", ignoreDirList)
+		fmt.Println("ignoreDirList =>", ignoreDirList)
 	}
 
 }
@@ -64,18 +72,20 @@ func main() {
 	}
 
 	t1 := time.Now()
-	// Get Result and Save it to writeMap.
-	writeMap, err := FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList, *maxGoroutineNum)
+	// Get Result and Save it to writeChan.
+	writeChan, err := FileSHACount.GenDirTreeSHA1(*dirRoot, ignoreDirList, ignoreFileList, *maxGoroutineNum)
 	// Handle GenDirTreeSHA1 Error.
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	t2 := time.Now()
 
 	// Write Result into File.
-	for _, sf := range writeMap {
-		// _, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
+	for {
+		sf, isOpen := <-writeChan
+		if !isOpen {
+			break
+		}
 		f := *sf.FileInfo
 		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", f.Name(), sf.SHA1, f.Size()))
 		if err != nil {
@@ -83,6 +93,7 @@ func main() {
 		}
 	}
 
+	t2 := time.Now()
 	// Done.
 	fmt.Println("Generate Dir tree SHA1 Done, Check your result.txt!")
 	fmt.Println("Used Time: ", t2.Sub(t1))

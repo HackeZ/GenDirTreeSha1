@@ -29,8 +29,8 @@ type SHAFile struct {
 
 // GenDirTreeSHA1 ...
 // @param path, ignoreDir, ignoreFile, maxGoroutineNum
-// @return resultMap, error
-func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) ([]SHAFile, error) {
+// @return <-chan, error
+func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) (<-chan SHAFile, error) {
 
 	// set of Max Gorotine Number.
 	if maxGNum <= 0 {
@@ -42,27 +42,11 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) 
 	ignoreDirList, ignoreFileList = ignoreDir, ignoreFile
 
 	// Send Count File SHA1 between gorotinue.
-	// writeFileChan = make(chan map[string]*os.FileInfo, 100)
 	writeFileChan = make(chan SHAFile, 100)
-	// writeMap Save Result from writeFileChan
-	// writeMap := make(map[string]*os.FileInfo)
 	// Get Dir Tree Start.
 	go getDirTree(path)
 
-	// Main Process Sleep a little, make writeFileChan not empty.
-	// time.Sleep(10 * time.Millisecond)
-
-	// Get Result Start.
-	writeSHAFile := []SHAFile{}
-	for {
-		result, isOpen := <-writeFileChan
-		if !isOpen {
-			break
-		}
-		writeSHAFile = append(writeSHAFile, result)
-	}
-
-	return writeSHAFile, nil
+	return writeFileChan, nil
 }
 
 // getDirTree return dir tree.
