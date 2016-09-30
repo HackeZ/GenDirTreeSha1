@@ -42,5 +42,7 @@ $ ./GenDirTreeSha1 -r `the-dir-root` -d ".git,vie?s,*s" -f "*.go,*.t?t" -g 2048
 
 ### Benchmark
 
-400 Files => Used Times : 119ms
-10286 Files => Used Times : 1.57s
+```
+400 Files => Used Times : 119ms    
+10286 Files => Used Times : 1.02s
+```
