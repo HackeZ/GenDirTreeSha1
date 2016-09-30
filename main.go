@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hackez/GenDirTreeSha1/FileSHACount"
+	"github.com/hackez/gendirtreesha1/FileSHACount"
 )
 
 var igFile = flag.String("f", "", "-f used to set ignore file list.")
@@ -49,7 +49,7 @@ func init() {
 func main() {
 	// If dir root not set, exit.
 	if len(*dirRoot) == 0 {
-		fmt.Println("Please Set Up Dir Root.")
+		fmt.Println("Please Use \"-r\" to Set Up Dir Root.")
 		os.Exit(0)
 	}
 	fmt.Println("Max Goroutine:", *maxGoroutineNum)
@@ -74,9 +74,10 @@ func main() {
 	t2 := time.Now()
 
 	// Write Result into File.
-	for sha1, f := range writeMap {
-		file1 := *f
-		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
+	for _, sf := range writeMap {
+		// _, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", file1.Name(), sha1, file1.Size()))
+		f := *sf.FileInfo
+		_, err = file.WriteString(fmt.Sprintf("%s, %s, %d Byte\n", f.Name(), sf.SHA1, f.Size()))
 		if err != nil {
 			panic(err)
 		}

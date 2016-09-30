@@ -8,9 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
-	"github.com/hackez/GenDirTreeSha1/glob"
+	"github.com/hackez/gendirtreesha1/glob"
 )
 
 var ignoreFileList []string
@@ -19,13 +18,19 @@ var ignoreDirList []string
 // Set Max of Gorotine Number.
 var maxGoroutineChan chan int
 
-var writeFileChan chan map[string]*os.FileInfo
+var writeFileChan chan SHAFile
 var wg sync.WaitGroup
+
+// SHAFile Save A File Info With SHA1.
+type SHAFile struct {
+	FileInfo *os.FileInfo
+	SHA1     string
+}
 
 // GenDirTreeSHA1 ...
 // @param path, ignoreDir, ignoreFile, maxGoroutineNum
 // @return resultMap, error
-func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) (map[string]*os.FileInfo, error) {
+func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) ([]SHAFile, error) {
 
 	// set of Max Gorotine Number.
 	if maxGNum <= 0 {
@@ -37,27 +42,27 @@ func GenDirTreeSHA1(path string, ignoreDir, ignoreFile []string, maxGNum int64) 
 	ignoreDirList, ignoreFileList = ignoreDir, ignoreFile
 
 	// Send Count File SHA1 between gorotinue.
-	writeFileChan = make(chan map[string]*os.FileInfo, 100)
+	// writeFileChan = make(chan map[string]*os.FileInfo, 100)
+	writeFileChan = make(chan SHAFile, 100)
 	// writeMap Save Result from writeFileChan
-	writeMap := make(map[string]*os.FileInfo)
+	// writeMap := make(map[string]*os.FileInfo)
 	// Get Dir Tree Start.
 	go getDirTree(path)
 
 	// Main Process Sleep a little, make writeFileChan not empty.
-	time.Sleep(10 * time.Millisecond)
+	// time.Sleep(10 * time.Millisecond)
 
 	// Get Result Start.
+	writeSHAFile := []SHAFile{}
 	for {
 		result, isOpen := <-writeFileChan
 		if !isOpen {
 			break
 		}
-		for sha1, f := range result {
-			writeMap[sha1] = f
-		}
+		writeSHAFile = append(writeSHAFile, result)
 	}
 
-	return writeMap, nil
+	return writeSHAFile, nil
 }
 
 // getDirTree return dir tree.
@@ -106,7 +111,7 @@ func sHA1Sum(path string, file os.FileInfo) {
 	wg.Add(1)
 
 	// Read File Content.
-	sha, buf := sha1.New(), make([]byte, 1024*16)
+	sha, buf := sha1.New(), make([]byte, 1024)
 	thisF, _ := os.Open(path)
 	defer thisF.Close()
 	for {
@@ -121,12 +126,12 @@ func sHA1Sum(path string, file os.FileInfo) {
 	fileString := fmt.Sprintf("%x", sha.Sum(nil))
 
 	// init a sendFileInfo to Send writeFileChan.
-	sendFileInfo := make(map[string]*os.FileInfo)
-	sendFileInfo[fileString] = &file
+	var sendFileInfo SHAFile
+	// sendFileInfo[fileString] = &file
+	sendFileInfo.FileInfo = &file
+	sendFileInfo.SHA1 = fileString
 	// Send to writeFileChan.
 	writeFileChan <- sendFileInfo
-	// release sendFileInfo.
-	sendFileInfo = nil
 
 	// This gorotinue Done.
 	<-maxGoroutineChan
